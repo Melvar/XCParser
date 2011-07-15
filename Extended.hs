@@ -55,6 +55,7 @@ target = do
            char '{'
            g <- group
            char '}'
+           whiteSpace
            return (Group g)
          <|>
          do

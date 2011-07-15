@@ -1,9 +1,9 @@
 #exttest.extcompose
 #used for testing the Extension module
 
-<Multi_key> <ampersand> : {
+<Multi_key> <ampersand> : { # group starts here
     <t> <e> <a> : "tea" #tea
     <c> <o> <f> <f> <e> <e> : "coffee" #coffee
-}
+} # group ends here
 <Multi_key> <plus> <a> : "A+!" # WTF
 
