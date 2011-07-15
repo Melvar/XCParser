@@ -1,5 +1,8 @@
-
-
+module XCParser ( Compose(..)
+                , Target(..)
+                , Keysym(..)
+                , file
+                ) where
 
 import Text.ParserCombinators.Parsec
 import Data.Char(chr, digitToInt, isSeparator, isAlphaNum)
