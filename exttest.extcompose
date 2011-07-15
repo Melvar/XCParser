@@ -7,3 +7,11 @@
 } # group ends here
 <Multi_key> <plus> <a> : "A+!" # WTF
 
+# reference a name:
+<U1BB> : @turn
+
+# define it:
+[turn] : {
+    <a> : "ɐ" U0250
+}
+

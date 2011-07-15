@@ -7,12 +7,17 @@ module Extended ( Compose(..)
 import Text.ParserCombinators.Parsec
 import Data.Char(chr, digitToInt, isSeparator, isAlphaNum)
 
-data Compose = SeqDef [Keysym] Target
-               deriving (Show)
+data Compose = Def Trigger Target
+               deriving (Eq, Show)
+
+data Trigger = KeySeq [Keysym]
+             | Name String
+               deriving (Eq, Show)
 
 data Target = Output String (Maybe Keysym)
             | Group [Compose]
-              deriving (Show)
+            | Ref String
+              deriving (Eq, Show)
 
 type Keysym = String
 
@@ -31,20 +36,30 @@ group = do
 line :: Parser (Maybe Compose)
 line = do
          whiteSpace
-         option Nothing (fmap Just seqDef)
+         option Nothing (fmap Just def)
 
-seqDef :: Parser Compose
-seqDef = do
-           keys <- many1 key
+def :: Parser Compose
+def = do
+           trig <- trigger
            char ':'
            whiteSpace
            targ <- target
-           return (SeqDef keys targ)
+           return (Def trig targ)
+
+trigger :: Parser Trigger
+trigger = do
+            char '['
+            n <- name
+            char ']'
+            whiteSpace
+            return (Name n)
+          <|>
+          fmap KeySeq (many key)
 
 key :: Parser Keysym
 key = do
         char '<'
-        k <- keysym
+        k <- name
         char '>'
         whiteSpace
         return k
@@ -59,13 +74,18 @@ target = do
            return (Group g)
          <|>
          do
+           char '@'
+           n <- name
+           return (Ref n)
+         <|>
+         do
            str <- stringLiteral
-           sym <- option Nothing (fmap Just keysym)
+           sym <- option Nothing (fmap Just name)
            whiteSpace
            return (Output str sym)
 
-keysym :: Parser Keysym
-keysym = many1 (satisfy (\c -> c == '_' || isAlphaNum c)) <?> "keysym name"
+name :: Parser Keysym
+name = many1 (satisfy (\c -> c == '_' || isAlphaNum c)) <?> "name"
 
 stringLiteral :: Parser String
 stringLiteral = do
