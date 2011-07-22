@@ -10,7 +10,7 @@ import Data.Char(chr, digitToInt, isSeparator, isAlphaNum)
 data Compose = Def Trigger Target
                deriving (Eq, Show)
 
-data Trigger = KeySeq [Keysym]
+data Trigger = KeySeq [Keys]
              | Name String
                deriving (Eq, Show)
 
@@ -18,6 +18,10 @@ data Target = Output String (Maybe Keysym)
             | Group [Compose]
             | Ref String
               deriving (Eq, Show)
+
+data Keys = Sym Keysym
+          | Lit String
+            deriving (Eq, Show)
 
 type Keysym = String
 
@@ -54,7 +58,10 @@ trigger = do
             whiteSpace
             return (Name n)
           <|>
-          fmap KeySeq (many key)
+          fmap KeySeq (many keys)
+
+keys :: Parser Keys
+keys = fmap Sym key <|> fmap Lit stringLiteral
 
 key :: Parser Keysym
 key = do

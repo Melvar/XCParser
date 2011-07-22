@@ -4,6 +4,8 @@
 <Multi_key> <ampersand> : { # group starts here
     <t> <e> <a> : "tea" #tea
     <c> <o> <f> <f> <e> <e> : "coffee" #coffee
+    # use a string literal:
+    "peace" : "☮" #peace sign
 } # group ends here
 <Multi_key> <plus> <a> : "A+!" # WTF
 
@@ -14,4 +16,7 @@
 [turn] : {
     <a> : "ɐ" U0250
 }
+
+# mix straight keysyms and string literals:
+<Multi_key> "pm" : "±" plusminus
 
