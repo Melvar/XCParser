@@ -2,10 +2,15 @@ module Extended ( Compose(..)
                 , Target(..)
                 , Keysym(..)
                 , file
+                , standardize
                 ) where
 
 import Text.ParserCombinators.Parsec
-import Data.Char(chr, digitToInt, isSeparator, isAlphaNum)
+import Data.Char (ord, chr, digitToInt, isSeparator, isAlphaNum, toUpper)
+import Data.List (partition)
+import Numeric (showHex)
+
+import qualified XCParser as X
 
 data Compose = Def Trigger Target
                deriving (Eq, Show)
@@ -135,3 +140,34 @@ comment = do
             char '#'
             skipMany (satisfy (/='\n'))
           <?> "comment"
+
+
+standardize :: [Compose] -> [X.Compose]
+standardize cs = concatMap (flattenDef (map pairize nameDefs)) seqDefs
+    where (nameDefs, seqDefs) = partition isNameDef cs
+          isNameDef (Def (Name _) _) = True
+          isNameDef _ = False
+
+flattenDef :: [(String, Target)] -> Compose -> [X.Compose]
+flattenDef _ (Def (Name _) _) = error "flattenDef: got a nameDef instead of a seqDef"
+flattenDef nameDefs (Def (KeySeq ks) targ) = case unRef targ of
+                                                 (Ref _) -> error "flattenDef: got a Ref from unRef"
+                                                 (Group cs) -> map (prependKeys (concatMap flattenKeys ks)) $ concatMap (flattenDef nameDefs) cs
+                                                 (Output str m) -> [X.SeqDef (concatMap flattenKeys ks) $ X.Output str m]
+    where unRef (Ref n) = unRef $ maybe (error "unRef: undefined reference") id $ lookup n nameDefs
+          unRef d = d
+
+prependKeys :: [X.Keysym] -> X.Compose -> X.Compose
+prependKeys ks (X.SeqDef kss targ) = X.SeqDef (ks ++ kss) targ
+
+flattenKeys :: Keys -> [X.Keysym]
+flattenKeys (Sym k) = [k]
+flattenKeys (Lit str) = map charToSym str
+
+charToSym :: Char -> X.Keysym
+charToSym c = 'U' : map toUpper (showHex (ord c) [])
+
+pairize :: Compose -> (String, Target)
+pairize (Def (Name n) targ) = (n, targ)
+pairize _ = error "pairize: got a non-nameDef"
+

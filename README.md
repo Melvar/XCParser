@@ -12,3 +12,7 @@ half extensions:
     corresponding to the individual characters of the string.
 -   Sequences can be empty.
 
+Additionally, `Extended` contains a function `standardize` to convert it into
+the representation of a standard .XCompose file, using the types from
+`XCParser`.
+
