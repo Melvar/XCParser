@@ -6,7 +6,7 @@ module Extended ( Compose(..)
                 ) where
 
 import Text.ParserCombinators.Parsec
-import Data.Char (ord, chr, digitToInt, isSeparator, isAlphaNum, toUpper)
+import Data.Char (ord, chr, digitToInt, isSeparator, isAlphaNum, isAscii, toUpper)
 import Data.List (partition)
 import Numeric (showHex)
 
@@ -165,7 +165,8 @@ flattenKeys (Sym k) = [k]
 flattenKeys (Lit str) = map charToSym str
 
 charToSym :: Char -> X.Keysym
-charToSym c = 'U' : padToWith 4 '0' (map toUpper (showHex (ord c) []))
+charToSym c | isAscii c && isAlphaNum c = [c]
+            | otherwise = 'U' : padToWith 4 '0' (map toUpper (showHex (ord c) []))
 
 pairize :: Compose -> (String, Target)
 pairize (Def (Name n) targ) = (n, targ)
