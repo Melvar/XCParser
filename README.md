@@ -18,3 +18,5 @@ the representation of a standard .XCompose file, using the types from
 representation back into .XCompose format. These together allow converting from
 extended to standard format.
 
+`standardize.hs` is a trivial program that does this, as a filter.
+
