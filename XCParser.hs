@@ -2,10 +2,12 @@ module XCParser ( Compose(..)
                 , Target(..)
                 , Keysym(..)
                 , file
+                , unparse
                 ) where
 
 import Text.ParserCombinators.Parsec
-import Data.Char(chr, digitToInt, isSeparator, isAlphaNum)
+import Data.Char (ord, chr, digitToInt, isSeparator, isAlphaNum)
+import Numeric (showOct)
 
 data Compose = SeqDef [Keysym] Target
                deriving (Show)
@@ -100,3 +102,21 @@ comment = do
             char '#'
             skipMany (satisfy (/='\n'))
           <?> "comment"
+
+unparse :: [Compose] -> String
+unparse = unlines . map unparseLine
+
+unparseLine :: Compose -> String
+unparseLine (SeqDef ks (Output str m)) = keys ++ " : " ++ targ
+    where keys = unwords $ map (('<':) . (++">")) ks
+          targ = cString str ++ maybe "" (' ':) m
+
+cString :: String -> String
+cString s = '"' : concatMap escape s ++ "\""
+    where escape c | c < ' ' = maybe (numescape c) (('\\':) . (:[])) $ lookup c [('\n','n'),('\r','r'),('\b','b'),('\t','t'),('\f','f'),('\a','a'),('\v','v')]
+                   | c == '\127' = numescape c
+                   | c > '\127' && c < ' ' = "\\302" ++ numescape c
+                   | c `elem` "\\\"'?" = ['\\',c]
+                   | otherwise = [c]
+          numescape c = '\\' : showOct (ord c) []
+

@@ -14,5 +14,7 @@ half extensions:
 
 Additionally, `Extended` contains a function `standardize` to convert it into
 the representation of a standard .XCompose file, using the types from
-`XCParser`.
+`XCParser`, and `XCParser` contains a function `unparse` to convert a
+representation back into .XCompose format. These together allow converting from
+extended to standard format.
 
