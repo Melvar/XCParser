@@ -165,9 +165,12 @@ flattenKeys (Sym k) = [k]
 flattenKeys (Lit str) = map charToSym str
 
 charToSym :: Char -> X.Keysym
-charToSym c = 'U' : map toUpper (showHex (ord c) [])
+charToSym c = 'U' : padToWith 4 '0' (map toUpper (showHex (ord c) []))
 
 pairize :: Compose -> (String, Target)
 pairize (Def (Name n) targ) = (n, targ)
 pairize _ = error "pairize: got a non-nameDef"
+
+padToWith :: Int -> a -> [a] -> [a]
+padToWith n a l = replicate (n - length l) a ++ l
 
