@@ -154,7 +154,7 @@ flattenDef nameDefs (Def (KeySeq ks) targ) = case unRef targ of
                                                  (Ref _) -> error "flattenDef: got a Ref from unRef"
                                                  (Group cs) -> map (prependKeys (concatMap flattenKeys ks)) $ concatMap (flattenDef nameDefs) cs
                                                  (Output str m) -> [X.SeqDef (concatMap flattenKeys ks) $ X.Output str m]
-    where unRef (Ref n) = unRef $ maybe (error "unRef: undefined reference") id $ lookup n nameDefs
+    where unRef (Ref n) = unRef $ maybe (error $ "unRef: undefined reference " ++ show n) id $ lookup n nameDefs
           unRef d = d
 
 prependKeys :: [X.Keysym] -> X.Compose -> X.Compose
