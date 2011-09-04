@@ -88,6 +88,7 @@ target = do
          do
            char '@'
            n <- name
+           whiteSpace
            return (Ref n)
          <|>
          do
