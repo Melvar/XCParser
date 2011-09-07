@@ -3,11 +3,21 @@ import Text.ParserCombinators.Parsec (parse)
 import Extended (file, standardize)
 import XCParser (unparse)
 
-main :: IO ()
-main = interact transform
+import System.IO (hPutStrLn, stderr)
+import System.Exit (ExitCode (..), exitWith)
 
-transform :: String -> String
-transform s = case parse file "Stdin" s of
-                Left err -> show err ++ "\n"
-                Right tree -> unparse $ standardize tree
+main :: IO ()
+main = do
+    cont <- getContents
+    case parse file "stdin" cont of
+        Left err -> do
+            putStrLn $ show err
+            exitWith $ ExitFailure 1
+        Right tree -> do
+            let (errs,goods) = standardize tree
+            mapM_ (hPutStrLn stderr) errs
+            putStr $ unparse goods
+            exitWith (if null errs
+                      then ExitSuccess
+                      else ExitFailure 2)
 

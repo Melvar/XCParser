@@ -14,9 +14,13 @@ half extensions:
 
 Additionally, `Extended` contains a function `standardize` to convert it into
 the representation of a standard .XCompose file, using the types from
-`XCParser`, and `XCParser` contains a function `unparse` to convert a
-representation back into .XCompose format. These together allow converting from
-extended to standard format.
+`XCParser`, and a list of errors. Lines that reference undefined names will be
+missing and an appropriate error among those returned. `XCParser` contains a
+function `unparse` to convert a representation back into .XCompose format. These
+together allow converting from extended to standard format.
 
-`standardize.hs` is a trivial program that does this, as a filter.
+`standardize.hs` is a program that does this. It accepts an extcompose file on
+stdin and writes the converted version to stdout. Any errors are written to
+stderr. A return value of 1 indicates a parse error, 2 indicates there were
+errors during conversion.
 
