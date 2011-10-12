@@ -20,3 +20,8 @@
 # mix straight keysyms and string literals:
 <Multi_key> "pm" : "±" plusminus
 
+# define a name more than once:
+[turn] : {
+    <exclam> : "¡" exclamdown
+}
+

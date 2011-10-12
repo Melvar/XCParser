@@ -8,8 +8,11 @@ module Extended ( Compose(..)
 import Text.ParserCombinators.Parsec
 import Data.Char (ord, chr, digitToInt, isSeparator, isAlphaNum, isAscii, toUpper)
 import Data.List (partition)
+import Data.Map (Map)
 import Numeric (showHex)
 import Control.Arrow (second)
+
+import qualified Data.Map as M
 
 import qualified XCParser as X
 
@@ -147,12 +150,12 @@ comment = do
 type FlattenError = String
 
 standardize :: [Compose] -> ([FlattenError],[X.Compose])
-standardize cs = pairconcat $ map (flattenDef (map pairize nameDefs)) seqDefs
+standardize cs = pairconcat $ map (flattenDef (makeMap nameDefs)) seqDefs
     where (nameDefs, seqDefs) = partition isNameDef cs
           isNameDef (Def (Name _) _) = True
           isNameDef _ = False
 
-flattenDef :: [(String, Target)] -> Compose -> ([FlattenError],[X.Compose])
+flattenDef :: Map String Target -> Compose -> ([FlattenError],[X.Compose])
 flattenDef _ (Def (Name _) _) = (["flattenDef: got a nameDef instead of a seqDef"],[])
 flattenDef nameDefs (Def (KeySeq ks) targ) = case unRef targ of
                                                  Left err -> ([err],[])
@@ -160,7 +163,7 @@ flattenDef nameDefs (Def (KeySeq ks) targ) = case unRef targ of
                                                  Right (Group cs) -> second (map (prependKeys (concatMap flattenKeys ks))) $ pairconcat $ map (flattenDef nameDefs) cs
                                                  Right (Output str m) -> ([],[X.SeqDef (concatMap flattenKeys ks) $ X.Output str m])
     where unRef :: Target -> Either FlattenError Target
-          unRef (Ref n) = unRef =<< maybe (Left $ "unRef: undefined reference " ++ show n) Right (lookup n nameDefs)
+          unRef (Ref n) = unRef =<< maybe (Left $ "unRef: undefined reference " ++ show n) Right (M.lookup n nameDefs)
           unRef d = Right d
 
 prependKeys :: [X.Keysym] -> X.Compose -> X.Compose
@@ -174,9 +177,13 @@ charToSym :: Char -> X.Keysym
 charToSym c | isAscii c && isAlphaNum c = [c]
             | otherwise = 'U' : padToWith 4 '0' (map toUpper (showHex (ord c) []))
 
-pairize :: Compose -> (String, Target)
-pairize (Def (Name n) targ) = (n, targ)
-pairize _ = error "pairize: got a non-nameDef"
+makeMap :: [Compose] -> Map String Target
+makeMap = foldr ins M.empty
+    where ins (Def (Name n) targ) = M.insertWith' unify n targ
+          unify (Group ns) (Group os) = Group $ ns ++ os
+          unify (Group ns) o = Group $ ns ++ [Def (KeySeq []) o] -- preserve order
+          unify n (Group os) = Group $ Def (KeySeq []) n : os
+          unify n o = Group $ map (Def $ KeySeq []) [n,o]
 
 pairconcat :: [([a],[b])] -> ([a],[b])
 pairconcat ps = (concatMap fst ps, concatMap snd ps)

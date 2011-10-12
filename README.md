@@ -7,7 +7,8 @@ half extensions:
 
 -   Grouping with `{}` allows common prefixes to be factored out.
 -   Names can be defined with `[name]` in place of a sequence and referenced by
-    `@name` as a target.
+    `@name` as a target. A name may be defined more than once, in which case
+    the corresponding targets are concatenated.
 -   Sequence elements can be string literals to indicate the keysyms
     corresponding to the individual characters of the string.
 -   Sequences can be empty.
