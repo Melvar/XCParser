@@ -10,7 +10,7 @@
 <Multi_key> <plus> <a> : "A+!" # WTF
 
 # reference a name:
-<U1BB> : @turn
+<U21BB> : @turn
 
 # define it:
 [turn] : {
